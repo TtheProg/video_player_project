@@ -12,6 +12,8 @@ const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
+const ffmpeg = require('fluent-ffmpeg');
+const ffprobeStatic = require('ffprobe-static');
 require('dotenv').config();
 
 const app = express();
@@ -26,6 +28,9 @@ const MOVIE_DIR = '/Users/hm/Documents/arabic anime/'; // <-- Change this to you
 // OMDb API setup
 const OMDB_API_KEY = process.env.OMDB_API_KEY;
 const OMDB_SEARCH_URL = 'http://www.omdbapi.com/';
+
+// Set ffprobe path for fluent-ffmpeg
+ffmpeg.setFfprobePath(ffprobeStatic.path);
 
 /**
  * Helper: Get list of movie files in the directory.
@@ -88,6 +93,19 @@ async function fetchMovieMetadata(title) {
   }
 }
 
+// Helper: Get video duration in seconds
+function getVideoDuration(filePath) {
+  return new Promise((resolve) => {
+    ffmpeg.ffprobe(filePath, (err, metadata) => {
+      if (err || !metadata || !metadata.format || !metadata.format.duration) {
+        resolve(null);
+      } else {
+        resolve(metadata.format.duration);
+      }
+    });
+  });
+}
+
 /**
  * API: Get list of movies with metadata.
  */
@@ -95,15 +113,17 @@ app.get('/api/movies', async (req, res) => {
   const files = getMovieFiles();
   const movies = await Promise.all(
     files.map(async file => {
-      // Use extractTitle to get a clean title for searching
+      const filePath = path.join(MOVIE_DIR, file);
       const title = extractTitle(file);
       const meta = await fetchMovieMetadata(title);
+      const duration = await getVideoDuration(filePath);
       return {
         file,
         title: meta?.title || title,
         overview: meta?.overview || '',
         poster: meta?.poster || '',
         year: meta?.year || '',
+        duration,
       };
     })
   );

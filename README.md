@@ -11,6 +11,10 @@ A modern, full-stack movie browser and player.
 - Browse your local movie collection with cover art and metadata
 - Click a movie to play it in the browser
 - Clean, modern UI
+- 3x3 grid layout with pagination
+- **Search field to filter movies by title**
+- **Displays video length for each movie**
+- **Centered search bar, grid, and pagination controls**
 
 ---
 
@@ -74,13 +78,11 @@ npm start
 ## Future Goals / To Dos
 
 - Chromecast integration
-- 4x4 grid layout with pages
 - More modern interface with hover, animations, gloss, colors, etc.
-- Search field
-- File length as meta info
 - Path selector so that the user selects the movie folder through UI
 - Default cover is a thumbnail from the middle of the file
 - Scraping the web for a cover art
+- turn the code into an executable which can be put on a hard drive
 
 ---
 
@@ -94,4 +96,3 @@ npm start
 ## License
 
 MIT
-
