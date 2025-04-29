@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Container, Grid, Card, CardMedia, CardContent, Typography, Dialog, IconButton } from '@mui/material';
+import { Container, Grid, Card, CardMedia, CardContent, Typography, Dialog, IconButton, Button, Box } from '@mui/material';
 // import './App.css';
 
 /**
@@ -10,29 +10,70 @@ import { Container, Grid, Card, CardMedia, CardContent, Typography, Dialog, Icon
 function App() {
   const [movies, setMovies] = useState([]);
   const [selected, setSelected] = useState(null);
+  const [page, setPage] = useState(1);
+
+  const MOVIES_PER_PAGE = 9;
 
   // Fetch movies from backend on mount
   useEffect(() => {
     axios.get('http://localhost:4000/api/movies').then(res => setMovies(res.data));
   }, []);
 
+  // Calculate movies to display on the current page
+  const startIdx = (page - 1) * MOVIES_PER_PAGE;
+  const endIdx = startIdx + MOVIES_PER_PAGE;
+  const pagedMovies = movies.slice(startIdx, endIdx);
+  const totalPages = Math.ceil(movies.length / MOVIES_PER_PAGE);
+
   return (
-    <Container sx={{ py: 4 }}>
+    <Container sx={{ py: 4 }} maxWidth="xl">
       <Typography variant="h3" gutterBottom align="center">
         Movie Browser
       </Typography>
-      <Grid container spacing={4}>
-        {movies.map(movie => (
-          <Grid item key={movie.file} xs={12} sm={6} md={3}>
-            <Card sx={{ cursor: 'pointer' }} onClick={() => setSelected(movie)}>
+      <Grid container spacing={3}>
+        {pagedMovies.map((movie, idx) => (
+          <Grid item key={movie.file} xs={12} sm={6} md={4}>
+            <Card
+              sx={{
+                cursor: 'pointer',
+                width: 320,
+                height: 320,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+                margin: '0 auto',
+                boxSizing: 'border-box',
+              }}
+              onClick={() => setSelected(movie)}
+            >
               <CardMedia
                 component="img"
-                height="350"
-                image={movie.poster || 'https://via.placeholder.com/350x500?text=No+Image'}
+                image={movie.poster || '/no_cover.jpg'}
                 alt={movie.title}
+                sx={{
+                  width: '100%',
+                  height: 'auto',
+                  maxHeight: 200, // Ensures the image doesn't overflow the card
+                  objectFit: 'contain',
+                  marginTop: 1,
+                }}
               />
-              <CardContent>
-                <Typography variant="h6">{movie.title} ({movie.year})</Typography>
+              <CardContent
+                sx={{
+                  width: '100%',
+                  flexGrow: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'flex-end',
+                  alignItems: 'flex-start',
+                  padding: 2,
+                  boxSizing: 'border-box',
+                }}
+              >
+                <Typography variant="h6" noWrap>
+                  {movie.title} ({movie.year})
+                </Typography>
                 <Typography variant="body2" color="text.secondary" noWrap>
                   {movie.overview}
                 </Typography>
@@ -41,6 +82,29 @@ function App() {
           </Grid>
         ))}
       </Grid>
+
+      {/* Pagination Controls */}
+      <Box display="flex" justifyContent="center" alignItems="center" mt={4}>
+        <Button
+          variant="contained"
+          onClick={() => setPage(page - 1)}
+          disabled={page === 1}
+          sx={{ mr: 2 }}
+        >
+          Previous
+        </Button>
+        <Typography variant="body1">
+          Page {page} of {totalPages}
+        </Typography>
+        <Button
+          variant="contained"
+          onClick={() => setPage(page + 1)}
+          disabled={page === totalPages}
+          sx={{ ml: 2 }}
+        >
+          Next
+        </Button>
+      </Box>
 
       {/* Movie Player Dialog */}
       <Dialog open={!!selected} onClose={() => setSelected(null)} maxWidth="md" fullWidth>

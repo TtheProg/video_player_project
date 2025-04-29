@@ -39,3 +39,4 @@ movie-browser/client/build/
 
 # Recursively ignore all .log files
 **/*.log
+ls
